@@ -1,3 +1,7 @@
 {
    "bot_token":"7245859658:AAEO6GjXhuYX0ksWDXM26a6ukvtUgU2BV-E",
+   "db_host":"192.168.3.80",
+   "db_user":"worker",
+   "db_pass":"P@Ssw0rd",
+   "db_database":"worker"
 }
