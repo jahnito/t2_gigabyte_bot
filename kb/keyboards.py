@@ -1,7 +1,10 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-__all__ = ['gen_kb_show_volume', 'gen_kb_add_volume', 'gen_kb_del_volume']
+__all__ = ['gen_kb_show_volume', 'gen_kb_add_volume', 'gen_kb_del_volume',
+           'gen_kb_notifi_volume', 'gen_kb_notifi_time', 'gen_kb_notifi_tz',
+           'gen_kb_notifi_threshold', 'gen_kb_del_notifi'
+           ]
 
 
 def gen_kb_show_volume(volumes: list | tuple):
@@ -33,4 +36,46 @@ def gen_kb_del_volume(volumes: list | tuple):
     builder.row(*[InlineKeyboardButton(text=f'{i}', callback_data=f'delvol_{i}') for i in volumes])
     btn_cancel = InlineKeyboardButton(text='Отмена', callback_data=f'pagevol_cancel')
     builder.row(btn_cancel)
+    return builder.as_markup()
+
+
+def gen_kb_notifi_volume(volumes: list | tuple):
+    builder = InlineKeyboardBuilder()
+    builder.row(*[InlineKeyboardButton(text=f'{i}', callback_data=f'setvol_{i}') for i in volumes])
+    btn_cancel = InlineKeyboardButton(text='Отмена', callback_data=f'setvol_cancel')
+    builder.row(btn_cancel)
+    return builder.as_markup()
+
+
+def gen_kb_notifi_time(suffix: str, vol: int):
+    builder = InlineKeyboardBuilder()
+    builder.row(*[InlineKeyboardButton(text=f'{i}', callback_data=f'{suffix}_{vol}_{i:02}') for i in range(25)])
+    builder.adjust(5)
+    return builder.as_markup()
+
+
+def gen_kb_notifi_tz(vol: int):
+    tzones = {
+        'KALT +2': 2, 'MSK +3': 3, 'SAMT +4': 4,
+        'YEKT +5': 5, 'OMST +6': 6, 'KRAT +7': 7,
+        'IRKT +8': 8, 'YAKT +9': 9, 'VLAT +10': 10,
+        'MAGT +11': 11, 'PETT +12': 12
+              }
+    builder = InlineKeyboardBuilder()
+    builder.row(*[InlineKeyboardButton(text=f'{k}', callback_data=f'tz_{vol}_{v}') for k, v in tzones.items()])
+    builder.adjust(3)
+    return builder.as_markup()
+
+
+def gen_kb_notifi_threshold(vol: int):
+    builder = InlineKeyboardBuilder()
+    builder.row(*[InlineKeyboardButton(text=f'{i}%', callback_data=f'threshold_{vol}_{i}') for i in range(40, 125, 5)])
+    builder.adjust(6)
+    return builder.as_markup()
+
+
+def gen_kb_del_notifi(volumes: list):
+    builder = InlineKeyboardBuilder()
+    builder.row(*[InlineKeyboardButton(text=f'Объем {i[0]} с {i[1]} до {i[2]} порог {i[3]}%', callback_data=f'delnot_{i[0]}') for i in volumes])
+    builder.adjust(1)
     return builder.as_markup()

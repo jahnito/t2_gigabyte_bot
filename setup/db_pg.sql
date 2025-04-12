@@ -11,3 +11,15 @@ CREATE TABLE IF NOT EXISTS "public"."users" (
   "lastname" character(128) NOT NULL
 );
 
+
+CREATE TABLE IF NOT EXISTS "public"."notifier" (
+  "id" serial NOT NULL,
+  PRIMARY KEY ("id"),
+  "tg_id" integer NOT NULL,
+  "start_time" time,
+  "end_time" time,
+  "volume" integer NOT NULL,
+  "tz" integer,
+  "threshold" real,
+  "status" integer
+);
