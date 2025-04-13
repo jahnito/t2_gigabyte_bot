@@ -262,7 +262,7 @@ async def add_notification_tz(callback: CallbackQuery, vol: int, tz: str):
 
 
 @dp.callback_query(AddThresholdNotification())
-async def add_notification_tz(callback: CallbackQuery, vol: int, threshold: str):
+async def add_notification_threshold(callback: CallbackQuery, vol: int, threshold: str):
     await add_notifier_threshold(DSN, callback, vol, threshold)
     await callback.message.edit_text(
         text=f'Добавили уведомление для объема {vol}\n'
