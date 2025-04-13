@@ -13,5 +13,5 @@ def calculate_coefficient(lots: int,
         return round(sold / all_lots, round_result)
     elif sold and not all_lots:
         return sold
-    else: # all_lots and not sold:
+    else:
         return 0

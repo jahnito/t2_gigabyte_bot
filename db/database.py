@@ -10,7 +10,9 @@ __all__ = [
             "del_volume_db", "check_database", "get_users",
             "add_new_notification", "check_vol_notifier", "add_notifier_tz",
             "add_notifier_starttime", "add_notifier_endtime",
-            "add_notifier_threshold", "get_notifier_lots", "del_notifier_lots"
+            "add_notifier_threshold", "get_notifier_lots", "del_notifier_lots",
+            "get_notifier_volumes", "get_notifier_users",
+            "set_notifier_user_status"
            ]
 
 
@@ -132,11 +134,9 @@ async def get_data_in_delta(dsn: str, data: str, delta: timedelta,
                             tz: timedelta, volume: int):
     delta = delta.total_seconds() // 60
     # tz = tz.total_seconds() // 60
-
-    query = f'SELECT sum(cnt) FROM {data} WHERE dtime >= (now() - interval \''\
-            f' {delta} minutes\')'\
-            f' and volume = {volume}'
-
+    query = f'SELECT sum(cnt) FROM {data} WHERE '\
+            f'cnt > 0 and volume = {volume} '\
+            f'and dtime >= (now() - interval \'{delta} minutes\')'
     pool = await aiopg.create_pool(dsn)
     try:
         async with pool.acquire() as conn:
@@ -144,7 +144,10 @@ async def get_data_in_delta(dsn: str, data: str, delta: timedelta,
                 await cursor.execute(query)
                 ret = await cursor.fetchall()
             await conn.close()
-        return ret[0][0]
+        if ret[0][0]:
+            return ret[0][0]
+        else:
+            return 0
     except Exception as e:
         print(e)
         return None
@@ -285,7 +288,8 @@ async def add_notifier_threshold(dsn: str,
                           threshold: int
                           ) -> int:
     '''
-    Функция вносит пороговое значение, после которого начинает высылать уведомления
+    Функция вносит пороговое значение,
+    после которого начинает высылать уведомления
     '''
     query = f'UPDATE notifier SET '\
             f'threshold = {threshold} '\
@@ -322,6 +326,66 @@ async def del_notifier_lots(dsn: str, m: Message | CallbackQuery, vol: int):
     Удаление нотификации для объема
     '''
     query = f'DELETE FROM notifier WHERE tg_id = {m.from_user.id} and volume = {vol}'
+    pool = await aiopg.create_pool(dsn)
+    try:
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cursor:
+                await cursor.execute(query)
+            await conn.close()
+    except Exception:
+        return None
+
+
+async def get_notifier_volumes(dsn: str):
+    '''
+    Забираем уникальные значения волюмов выставленных на уведомления
+    '''
+    query = 'SELECT DISTINCT volume FROM notifier ORDER BY volume'
+    pool = await aiopg.create_pool(dsn)
+    try:
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cursor:
+                await cursor.execute(query)
+                ret = await cursor.fetchall()
+            await conn.close()
+        if ret:
+            return [i[0] for i in ret]
+        else:
+            return []
+    except Exception:
+        return None
+
+
+async def get_notifier_users(dsn: str, volume: int):
+    '''
+    Собираем пользователей кому можно отправить данные
+    '''
+    query = 'SELECT tg_id, tz, status, threshold FROM notifier WHERE ' \
+            f'volume = {volume} '\
+            'and start_time < CURRENT_TIME + tz * INTERVAL \'60 minutes\' '\
+            'and end_time > CURRENT_TIME + tz * INTERVAL \'60 minutes\''
+    pool = await aiopg.create_pool(dsn)
+    try:
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cursor:
+                await cursor.execute(query)
+                ret = await cursor.fetchall()
+            await conn.close()
+        if ret:
+            return [i for i in ret]
+        else:
+            return []
+    except Exception:
+        return None
+
+
+async def set_notifier_user_status(dsn: str, volume: int, tg_id: int, status: int):
+    '''
+    UPDATE notifier SET status = 1 WHERE tg_id = 133073976 and volume = 19;
+
+    UPDATE notifier SET status = 0 WHERE tg_id = 133073976 and volume = 19;
+    '''
+    query = F'UPDATE notifier SET status = {status} WHERE tg_id = {tg_id} and volume = {volume}'
     pool = await aiopg.create_pool(dsn)
     try:
         async with pool.acquire() as conn:
