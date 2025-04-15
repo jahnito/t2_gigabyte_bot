@@ -12,15 +12,16 @@ from filters import PrevPageVolumes, CancelPageVolumes
 from filters import AddNotificationVolume, CancelNotificationVolumes
 from filters import AddStartTimeNotification, AddEndTimeNotification
 from filters import AddTzNotification, AddThresholdNotification
-from filters import DelNotification
+from filters import DelNotification, SetUserTz
 from kb import gen_kb_show_volume, gen_kb_add_volume, gen_kb_del_volume
 from kb import gen_kb_notifi_volume, gen_kb_notifi_time, gen_kb_notifi_tz
-from kb import gen_kb_notifi_threshold, gen_kb_del_notifi
+from kb import gen_kb_notifi_threshold, gen_kb_del_notifi, gen_kb_user_tz
 from db import get_active_volumes, check_user, create_user, get_data_in_delta
 from db import get_user_role, add_new_volume_db, del_volume_db, check_database
 from db import create_admin, get_users, add_new_notification, add_notifier_tz
 from db import check_vol_notifier, add_notifier_starttime, add_notifier_endtime
 from db import add_notifier_threshold, get_notifier_lots, del_notifier_lots
+from db import update_user_tz, get_user_tz
 from functions import calculate_coefficient
 
 
@@ -44,8 +45,10 @@ async def welcome(message: Message):
         await message.answer(text='Ты первый одел тапочки, теперь ты админ бота')
     else:
         await create_user(DSN, message)
-        await message.answer(text='Зарегал тебя, давай приступим к работе\.'
-                                  ' Твоя текущая роль **малец**',
+        await message.answer(text='Зарегал тебя, выбери свою временную '
+                                  'зону и приступим к работе\.'
+                                  ' Твоя текущая роль **малец** 👶',
+                             reply_markup=gen_kb_user_tz(),
                              parse_mode=ParseMode.MARKDOWN_V2)
 
 
@@ -147,25 +150,29 @@ async def set_notification_user(message: Message):
 
 ########################### CallBacks ###########################
 
+@dp.callback_query(SetUserTz())
+async def set_user_tz(callback: CallbackQuery, usertz: int):
+    await update_user_tz(DSN, callback, usertz)
+    await callback.message.edit_text(text=f'Твоя временная зона +{usertz}')
+
 
 @dp.callback_query(AskStats())
 async def show_volume_stats(callback: CallbackQuery, volume: int):
-    # print(callback.model_dump_json(indent=4))
     tz = timedelta(minutes=300)
-    head = ['10 минут', '1 час', '1 день']
+    periods = (10, 60)
+    head = [f'{i} минут' for i in periods]
     res = []
-    res.append(['Лоты'] + [await get_data_in_delta(DSN, 'lots', timedelta(minutes=i), tz, volume) for i in (10, 60, 1440)])
-    res.append(['Ракеты'] + [await get_data_in_delta(DSN, 'rockets', timedelta(minutes=i), tz, volume) for i in (10, 60, 1440)])
-    res.append(['Аномалии'] + [await get_data_in_delta(DSN, 'anomaly', timedelta(minutes=i), tz, volume) for i in (10, 60, 1440)])
-    res.append(['Продано'] + [await get_data_in_delta(DSN, 'sold', timedelta(minutes=i), tz, volume) for i in (10, 60, 1440)])
-    l10, l60, l1440 = res[0][1], res[0][2], res[0][3]
-    r10, r60, r1440 = res[1][1], res[1][2], res[1][3]
-    a10, a60, a1440 = res[2][1], res[2][2], res[2][3]
-    s10, s60, s1440 = res[3][1], res[3][2], res[3][3]
-    k10 = calculate_coefficient(l10, r10, a10, s10)
-    k60 = calculate_coefficient(l60, r60, a60, s60)
-    k1440 = calculate_coefficient(l1440, r1440, a1440, s1440)
-    res.append(['Процент проданых', f'{round(k10*100, 3)}%', f'{round(k60*100, 3)}%', f'{round(k1440*100, 3)}%'])
+    res.append(['Лоты'] + [await get_data_in_delta(DSN, 'lots', timedelta(minutes=i), tz, volume) for i in periods])
+    res.append(['Ракеты'] + [await get_data_in_delta(DSN, 'rockets', timedelta(minutes=i), tz, volume) for i in periods])
+    res.append(['Аномалии'] + [await get_data_in_delta(DSN, 'anomaly', timedelta(minutes=i), tz, volume) for i in periods])
+    res.append(['Продано'] + [await get_data_in_delta(DSN, 'sold', timedelta(minutes=i), tz, volume) for i in periods])
+    last_row = ['Процент проданых']
+    for i in range(1, len(periods) + 1):
+        last_row.append(calculate_coefficient(res[0][i],
+                                              res[1][i],
+                                              res[2][i],
+                                              res[3][i]))
+    res.append(last_row)
     text_msg = tabulate.tabulate(res, headers=head, )
     await callback.message.edit_text(text=f'Объем: {volume}\n```\n{text_msg}\n```', parse_mode=ParseMode.MARKDOWN_V2)
 
@@ -243,17 +250,19 @@ async def add_notification_starttime(callback: CallbackQuery, vol: int, start_ti
     )
 
 
+# @dp.callback_query(AddEndTimeNotification())
+# async def add_notification_endtime(callback: CallbackQuery, vol: int, end_time: str):
+#     await add_notifier_endtime(DSN, callback, vol, end_time)
+#     await callback.message.edit_text(
+#         text=f'🇷🇺 Выбери свою таймзону\n',
+#         reply_markup=gen_kb_notifi_tz(vol)
+#     )
+
+
 @dp.callback_query(AddEndTimeNotification())
-async def add_notification_endtime(callback: CallbackQuery, vol: int, end_time: str):
+async def add_notification_tz(callback: CallbackQuery, vol: int, end_time: str):
+    tz = await get_user_tz(DSN, callback)
     await add_notifier_endtime(DSN, callback, vol, end_time)
-    await callback.message.edit_text(
-        text=f'🇷🇺 Выбери свою таймзону\n',
-        reply_markup=gen_kb_notifi_tz(vol)
-    )
-
-
-@dp.callback_query(AddTzNotification())
-async def add_notification_tz(callback: CallbackQuery, vol: int, tz: str):
     await add_notifier_tz(DSN, callback, vol, tz)
     await callback.message.edit_text(
         text=f'На каком уровне тригерим для объема {vol}\n',

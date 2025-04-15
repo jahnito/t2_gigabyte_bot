@@ -3,7 +3,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 __all__ = ['gen_kb_show_volume', 'gen_kb_add_volume', 'gen_kb_del_volume',
            'gen_kb_notifi_volume', 'gen_kb_notifi_time', 'gen_kb_notifi_tz',
-           'gen_kb_notifi_threshold', 'gen_kb_del_notifi'
+           'gen_kb_notifi_threshold', 'gen_kb_del_notifi', 'gen_kb_user_tz'
            ]
 
 
@@ -78,4 +78,17 @@ def gen_kb_del_notifi(volumes: list):
     builder = InlineKeyboardBuilder()
     builder.row(*[InlineKeyboardButton(text=f'Объем {i[0]} с {i[1]} до {i[2]} порог {i[3]}%', callback_data=f'delnot_{i[0]}') for i in volumes])
     builder.adjust(1)
+    return builder.as_markup()
+
+
+def gen_kb_user_tz():
+    tzones = {
+        '⛵️ Калининград +2': 2, '🐉 Москва +3': 3, '🦌 Самара +4': 4,
+        '🧸 Екатеринбург +5': 5, '🌺 Омск +6': 6, '🦁 Красноярск +7': 7,
+        '🐈‍⬛ Иркутск +8': 8, '🏇 Якутия +9': 9, '🐅 Владивосток +10': 10,
+        '🦌 Магадан +11': 11, '🌋 Камчатка +12': 12
+              }
+    builder = InlineKeyboardBuilder()
+    builder.row(*[InlineKeyboardButton(text=f'{k}', callback_data=f'usertz_{v}') for k, v in tzones.items()])
+    builder.adjust(2)
     return builder.as_markup()

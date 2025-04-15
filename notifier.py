@@ -19,14 +19,21 @@ async def check_notifi():
             data_vol = await calc_coef(v)
             users = await get_notifier_users(DSN, v)
             for user in users:
+                # Если у пользователя есть коэф сверяем его с текущим
+                # также проверяем статус направлялось ли уведомление (1)
                 if user[-1] and data_vol[-1] >= user[-1] and not user[-2]:
                     await set_notifier_user_status(DSN, v, user[0], 1)
-                    await send_message_now(user, data_vol, v)
+                    try:
+                        await send_message_now(user, data_vol, v)
+                    except Exception:
+                        pass
+                # Все тоже самое только, тут смотрим если коэф меньше
                 elif user[-1] and data_vol[-1] < user[-1] and user[-2]:
                     await set_notifier_user_status(DSN, v, user[0], 0)
-                    await send_message_lost(user, data_vol, v)
-                else:
-                    pass
+                    try:
+                        await send_message_lost(user, data_vol, v)
+                    except Exception:
+                        pass
     else:
         await asyncio.sleep(30)
 

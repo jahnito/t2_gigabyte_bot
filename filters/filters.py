@@ -9,7 +9,7 @@ __all__ = [
     'AddNotificationVolume', 'CancelNotificationVolumes',
     'AddStartTimeNotification', 'AddEndTimeNotification',
     'AddTzNotification', 'AddThresholdNotification',
-    'DelNotification'
+    'DelNotification', 'SetUserTz'
            ]
 
 
@@ -211,6 +211,21 @@ class DelNotification(BaseFilter):
             suf, vol = callback.data.split('_')
             if suf == 'delnot':
                 return {'vol': int(vol)}
+            else:
+                return False
+        except (ValueError, IndexError):
+            return False
+
+
+class SetUserTz(BaseFilter):
+    def __init__(self):
+        pass
+
+    async def __call__(self, callback: CallbackQuery):
+        try:
+            suf, tz = callback.data.split('_')
+            if suf == 'usertz' and tz.isdigit():
+                return {'usertz': int(tz)}
             else:
                 return False
         except (ValueError, IndexError):

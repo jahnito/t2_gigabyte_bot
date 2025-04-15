@@ -12,7 +12,7 @@ __all__ = [
             "add_notifier_starttime", "add_notifier_endtime",
             "add_notifier_threshold", "get_notifier_lots", "del_notifier_lots",
             "get_notifier_volumes", "get_notifier_users",
-            "set_notifier_user_status"
+            "set_notifier_user_status", "update_user_tz", "get_user_tz"
            ]
 
 
@@ -114,6 +114,35 @@ async def create_user(dsn: str, m: Message):
     except Exception as e:
         print(e)
         return None
+
+
+async def update_user_tz(dsn: str, m: Message | CallbackQuery, usertz: int):
+    '''
+    Функция обновляет таймзону пользователя после реги
+    '''
+    query = f'UPDATE users SET usertz = {usertz} WHERE tg_id = {m.from_user.id}'
+    pool = await aiopg.create_pool(dsn)
+    try:
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cursor:
+                await cursor.execute(query)
+            await conn.close()
+    except Exception:
+        return False
+
+
+async def get_user_tz(dsn: str, m: Message | CallbackQuery) -> int:
+    query = f'SELECT usertz FROM users WHERE tg_id = {m.from_user.id}'
+    pool = await aiopg.create_pool(dsn)
+    try:
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cursor:
+                await cursor.execute(query)
+                ret = await cursor.fetchone()
+            await conn.close()
+        return ret[0]
+    except Exception:
+        return False
 
 
 async def create_admin(dsn: str, m: Message):

@@ -6,9 +6,10 @@ CREATE TABLE IF NOT EXISTS "public"."users" (
   "update_user" timestamp NOT NULL,
   "status" integer NOT NULL,
   "role" character(10) NOT NULL,
-  "username" character(128) NOT NULL,
-  "firstname" character(128) NOT NULL,
-  "lastname" character(128) NOT NULL
+  "username" character(64) NOT NULL,
+  "firstname" character(64) NOT NULL,
+  "lastname" character(64) NOT NULL,
+  "usertz" integer DEFAULT '2' NOT NULL
 );
 
 
