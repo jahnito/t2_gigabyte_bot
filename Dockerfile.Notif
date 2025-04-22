@@ -1,0 +1,23 @@
+FROM python:3.11.11-bookworm
+
+WORKDIR /app
+
+COPY requirements.txt .
+
+RUN pip install -r requirements.txt
+
+COPY ./config /app/config
+
+COPY ./db /app/db
+
+COPY ./filter /app/filter
+
+COPY ./functions /app/functions
+
+COPY ./kb /app/kb
+
+COPY ./setup /app/setup
+
+COPY notifier.py /app
+
+ENTRYPOINT ["python", "notifier.py"]

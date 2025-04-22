@@ -13,6 +13,7 @@ notifier = Bot(token=CFG.token)
 
 
 async def check_notifi():
+    # Собираем все волюмы выставленные для уведомления
     volumes = await get_notifier_volumes(DSN)
     if volumes:
         for v in volumes:
@@ -61,7 +62,8 @@ async def send_message_now(user_data, data_vol, volume):
     data.append(['Аномалии', data_vol[2]])
     data.append(['Продажи', data_vol[3]])
     data.append(['Процент проданых', data_vol[4]])
-    message = f'✅ Пора делать ракету дружок на объеме **{volume}**'
+    message = f'✅ На объеме **{volume}** достигнут/превышен '\
+              'необходимый коэффициэнт'
     message += '```' + tabulate.tabulate(data, headers=head) + '```'
     await notifier.send_message(tg_id, message, parse_mode=ParseMode.MARKDOWN_V2)
 
@@ -75,7 +77,8 @@ async def send_message_lost(user_data, data_vol, volume):
     data.append(['Аномалии', data_vol[2]])
     data.append(['Продажи', data_vol[3]])
     data.append(['Процент проданых', data_vol[4]])
-    message = f'⛔️ Для объема **{volume}** поезд ушел, жди другой'
+    message = f'⛔️ Для объема **{volume}** произошло снижение ниже '\
+              'установленного порога'
     message += '```' + tabulate.tabulate(data, headers=head) + '```'
     await notifier.send_message(tg_id, message, parse_mode=ParseMode.MARKDOWN_V2)
 

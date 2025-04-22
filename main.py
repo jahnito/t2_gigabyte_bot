@@ -166,12 +166,12 @@ async def show_volume_stats(callback: CallbackQuery, volume: int):
     res.append(['Ракеты'] + [await get_data_in_delta(DSN, 'rockets', timedelta(minutes=i), tz, volume) for i in periods])
     res.append(['Аномалии'] + [await get_data_in_delta(DSN, 'anomaly', timedelta(minutes=i), tz, volume) for i in periods])
     res.append(['Продано'] + [await get_data_in_delta(DSN, 'sold', timedelta(minutes=i), tz, volume) for i in periods])
-    last_row = ['Процент проданых']
+    last_row = ['Продано (%)']
     for i in range(1, len(periods) + 1):
-        last_row.append(calculate_coefficient(res[0][i],
+        last_row.append(round(calculate_coefficient(res[0][i],
                                               res[1][i],
                                               res[2][i],
-                                              res[3][i]))
+                                              res[3][i]) * 100, 2))
     res.append(last_row)
     text_msg = tabulate.tabulate(res, headers=head, )
     await callback.message.edit_text(text=f'Объем: {volume}\n```\n{text_msg}\n```', parse_mode=ParseMode.MARKDOWN_V2)
