@@ -10,7 +10,7 @@ COPY ./config /app/config
 
 COPY ./db /app/db
 
-COPY ./filter /app/filter
+COPY ./filters /app/filters
 
 COPY ./functions /app/functions
 

@@ -62,8 +62,7 @@ async def send_message_now(user_data, data_vol, volume):
     data.append(['Аномалии', data_vol[2]])
     data.append(['Продажи', data_vol[3]])
     data.append(['Процент проданых', data_vol[4]])
-    message = f'✅ На объеме **{volume}** достигнут/превышен '\
-              'необходимый коэффициэнт'
+    message = f'📈 Подъём продаж ({volume})'
     message += '```' + tabulate.tabulate(data, headers=head) + '```'
     await notifier.send_message(tg_id, message, parse_mode=ParseMode.MARKDOWN_V2)
 
@@ -77,8 +76,7 @@ async def send_message_lost(user_data, data_vol, volume):
     data.append(['Аномалии', data_vol[2]])
     data.append(['Продажи', data_vol[3]])
     data.append(['Процент проданых', data_vol[4]])
-    message = f'⛔️ Для объема **{volume}** произошло снижение ниже '\
-              'установленного порога'
+    message = f'📉 Снижение продаж ({volume})'
     message += '```' + tabulate.tabulate(data, headers=head) + '```'
     await notifier.send_message(tg_id, message, parse_mode=ParseMode.MARKDOWN_V2)
 

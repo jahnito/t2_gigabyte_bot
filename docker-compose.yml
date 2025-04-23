@@ -1,0 +1,13 @@
+services:
+  bot:
+    image: t2bot:0.2
+    volumes:
+      - type: bind
+        source: ./config/config.json
+        target: /app/config/config.json
+    networks:
+      - t2_gigabyte_exchange_default
+    build:
+      context: .
+      dockerfile: ./Dockerfile.Bot
+    restart: always

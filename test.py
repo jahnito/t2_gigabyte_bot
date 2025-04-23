@@ -15,3 +15,8 @@ async def main(dsn):
 if __name__ == '__main__':
     # print(CFG.get_dsn())
     asyncio.run(main(CFG.get_dsn()))
+
+
+'''
+docker run -d -ti -v /home/jahn/t2_gigabyte_bot/config/config.json:/app/config/config.json --network t2_gigabyte_exchange_default --restart unless-stopped --name t2_gigabyte_bot t2bot:0.1
+'''
