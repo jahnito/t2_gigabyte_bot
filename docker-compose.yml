@@ -13,4 +13,4 @@ services:
     restart: always
 
 networks:
-  t2_gigabyte_exchange_default
+  t2_gigabyte_exchange_default:
