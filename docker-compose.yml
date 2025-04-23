@@ -11,3 +11,6 @@ services:
       context: .
       dockerfile: ./Dockerfile.Bot
     restart: always
+
+networks:
+  t2_gigabyte_exchange_default
