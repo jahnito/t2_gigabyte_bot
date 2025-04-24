@@ -26,15 +26,15 @@ async def check_notifi():
                     await set_notifier_user_status(DSN, v, user[0], 1)
                     try:
                         await send_message_now(user, data_vol, v)
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        print(e)
                 # Все тоже самое только, тут смотрим если коэф меньше
                 elif user[-1] and data_vol[-1] < user[-1] and user[-2]:
                     await set_notifier_user_status(DSN, v, user[0], 0)
                     try:
                         await send_message_lost(user, data_vol, v)
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        print(e)
     else:
         await asyncio.sleep(30)
 
@@ -62,7 +62,7 @@ async def send_message_now(user_data, data_vol, volume):
     data.append(['Аномалии', data_vol[2]])
     data.append(['Продажи', data_vol[3]])
     data.append(['Процент проданых', data_vol[4]])
-    message = f'📈 Подъём продаж ({volume})'
+    message = f'📈 Подъём продаж {volume}'
     message += '```' + tabulate.tabulate(data, headers=head) + '```'
     await notifier.send_message(tg_id, message, parse_mode=ParseMode.MARKDOWN_V2)
 
@@ -76,7 +76,7 @@ async def send_message_lost(user_data, data_vol, volume):
     data.append(['Аномалии', data_vol[2]])
     data.append(['Продажи', data_vol[3]])
     data.append(['Процент проданых', data_vol[4]])
-    message = f'📉 Снижение продаж ({volume})'
+    message = f'📉 Снижение продаж {volume}'
     message += '```' + tabulate.tabulate(data, headers=head) + '```'
     await notifier.send_message(tg_id, message, parse_mode=ParseMode.MARKDOWN_V2)
 
