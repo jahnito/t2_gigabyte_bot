@@ -1,6 +1,6 @@
 services:
   bot:
-    image: t2bot:0.2
+    image: t2bot:0.3
     volumes:
       - type: bind
         source: ./config/config.json
@@ -11,7 +11,7 @@ services:
     restart: always
 
   notifier:
-    image: t2notif:0.2
+    image: t2notif:0.3
     volumes:
       - type: bind
         source: ./config/config.json
