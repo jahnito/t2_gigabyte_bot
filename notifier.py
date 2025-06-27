@@ -6,6 +6,11 @@ from db import get_data_in_delta, get_notifier_volumes, get_notifier_users
 from db import set_notifier_user_status
 from datetime import timedelta
 import tabulate
+import logging
+
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 CFG = Config()
 DSN = CFG.get_dsn()

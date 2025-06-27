@@ -29,7 +29,7 @@ CFG = Config()
 DSN = CFG.get_dsn()
 MAX_VOLUMES = 3
 
-
+logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=CFG.token)
 dp = Dispatcher()
@@ -38,6 +38,7 @@ dp = Dispatcher()
 
 @dp.message(Command(commands=['start']))
 async def welcome(message: Message):
+    logger.info(f'Command start from user: {message.from_user.id}')
     if await check_user(DSN, message):
         await message.answer('Ну ну, харэ стартули жать...')
     elif len(await get_users(DSN, message)) == 0:
@@ -54,6 +55,7 @@ async def welcome(message: Message):
 
 @dp.message(Command(commands=['show']))
 async def show_volume_user(message: Message):
+    logger.info(f'Command show from user: {message.from_user.id}')
     if await check_user(DSN, message):
         volumes = await get_active_volumes(CFG.get_dsn())
         await message.answer(text='Выбирай бродяга',
@@ -65,6 +67,7 @@ async def show_volume_user(message: Message):
 
 @dp.message(Command(commands=['add']))
 async def add_volume_user(message: Message):
+    logger.info(f'Command add from user: {message.from_user.id}')
     if await check_user(DSN, message):
         role = await get_user_role(DSN, message)
         if role == 'junior':
@@ -88,6 +91,7 @@ async def add_volume_user(message: Message):
 
 @dp.message(Command(commands=['del', 'remove']))
 async def del_volume_user(message: Message):
+    logger.info(f'Command del from user {message.from_user.id}')
     if await check_user(DSN, message):
         role = await get_user_role(DSN, message)
         if role == 'junior':
@@ -107,6 +111,7 @@ async def del_volume_user(message: Message):
 
 @dp.message(Command(commands=['setnotification']))
 async def set_notification_user(message: Message):
+    logger.info(f'Command setnotification from user {message.from_user.id}')
     if await check_user(DSN, message):
         role = await get_user_role(DSN, message)
         if role == 'junior':
@@ -130,6 +135,7 @@ async def set_notification_user(message: Message):
 
 @dp.message(Command(commands=['delnotification']))
 async def set_notification_user(message: Message):
+    logger.info(f'Command delnotification from user {message.from_user.id}')
     if await check_user(DSN, message):
         role = await get_user_role(DSN, message)
         if role == 'junior':

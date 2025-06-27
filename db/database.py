@@ -1,6 +1,7 @@
 import aiopg
 from aiogram.types import Message, CallbackQuery
 from datetime import timedelta
+import logging
 
 import asyncio
 
@@ -15,6 +16,8 @@ __all__ = [
             "set_notifier_user_status", "update_user_tz", "get_user_tz"
            ]
 
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 async def check_database(dsn: str, dbconf: str = 'setup/db_pg.sql'):
     with open(dbconf) as dump:
@@ -25,8 +28,11 @@ async def check_database(dsn: str, dbconf: str = 'setup/db_pg.sql'):
             async with conn.cursor() as cursor:
                 await cursor.execute(query)
             await conn.close()
+        logger.info('Connection to DB established')
     except Exception as e:
-        print(e)
+        logger.error('Error DB')
+        logger.error(e)
+        # print(e)
         return None
 
 
@@ -44,7 +50,8 @@ async def get_active_volumes(dsn: str) -> tuple:
             await conn.close()
         return tuple(i[0] for i in ret)
     except Exception as e:
-        print(e)
+        logger.error('Error DB')
+        logger.error(e)
         return None
 
 
@@ -65,7 +72,8 @@ async def check_user(dsn: str, m: Message) -> bool:
         else:
             return False
     except Exception as e:
-        print(e)
+        logger.error('Error DB')
+        logger.error(e)
         return None
 
 
@@ -80,7 +88,8 @@ async def get_users(dsn: str, m: Message) -> tuple:
             await conn.close()
             return ret
     except Exception as e:
-        print(e)
+        logger.error('Error DB')
+        logger.error(e)
         return None
 
 
@@ -98,7 +107,8 @@ async def get_user_role(dsn: str, m: Message) -> str:
             await conn.close()
         return ret[0].strip()
     except Exception as e:
-        print(e)
+        logger.error('Error DB')
+        logger.error(e)
         return None
 
 
@@ -112,7 +122,8 @@ async def create_user(dsn: str, m: Message):
                 await cursor.execute(query)
             await conn.close()
     except Exception as e:
-        print(e)
+        logger.error('Error DB')
+        logger.error(e)
         return None
 
 
@@ -127,7 +138,9 @@ async def update_user_tz(dsn: str, m: Message | CallbackQuery, usertz: int):
             async with conn.cursor() as cursor:
                 await cursor.execute(query)
             await conn.close()
-    except Exception:
+    except Exception as e:
+        logger.error('Error DB')
+        logger.error(e)
         return False
 
 
@@ -141,7 +154,9 @@ async def get_user_tz(dsn: str, m: Message | CallbackQuery) -> int:
                 ret = await cursor.fetchone()
             await conn.close()
         return ret[0]
-    except Exception:
+    except Exception as e:
+        logger.error('Error DB')
+        logger.error(e)
         return False
 
 
@@ -155,7 +170,8 @@ async def create_admin(dsn: str, m: Message):
                 await cursor.execute(query)
             await conn.close()
     except Exception as e:
-        print(e)
+        logger.error('Error DB')
+        logger.error(e)
         return None
 
 
@@ -178,7 +194,8 @@ async def get_data_in_delta(dsn: str, data: str, delta: timedelta,
         else:
             return 0
     except Exception as e:
-        print(e)
+        logger.error('Error DB')
+        logger.error(e)
         return None
 
 
@@ -192,7 +209,8 @@ async def add_new_volume_db(dsn: str, addvol: int):
             await conn.close()
         return True
     except Exception as e:
-        print(e)
+        logger.error('Error DB')
+        logger.error(e)
         return None
 
 
@@ -206,7 +224,8 @@ async def del_volume_db(dsn: str, delvol: int):
             await conn.close()
         return True
     except Exception as e:
-        print(e)
+        logger.error('Error DB')
+        logger.error(e)
         return None
 
 
@@ -221,7 +240,8 @@ async def add_new_notification(dsn: str, message: Message, vol: int):
             await conn.close()
         return True
     except Exception as e:
-        print(e)
+        logger.error('Error DB')
+        logger.error(e)
         return None
 
 
@@ -244,7 +264,8 @@ async def check_vol_notifier(dsn: str, m: Message | CallbackQuery, vol: int) -> 
         else:
             return False
     except Exception as e:
-        # print(e)
+        logger.error('Error DB')
+        logger.error(e)
         return None
 
 
@@ -266,6 +287,8 @@ async def add_notifier_starttime(dsn: str,
                 await cursor.execute(query)
             await conn.close()
     except Exception as e:
+        logger.error('Error DB')
+        logger.error(e)
         return None
 
 
@@ -287,6 +310,8 @@ async def add_notifier_endtime(dsn: str,
                 await cursor.execute(query)
             await conn.close()
     except Exception as e:
+        logger.error('Error DB')
+        logger.error(e)
         return None
 
 
@@ -308,6 +333,8 @@ async def add_notifier_tz(dsn: str,
                 await cursor.execute(query)
             await conn.close()
     except Exception:
+        logger.error('Error DB')
+        logger.error(e)
         return None
 
 
@@ -329,7 +356,9 @@ async def add_notifier_threshold(dsn: str,
             async with conn.cursor() as cursor:
                 await cursor.execute(query)
             await conn.close()
-    except Exception:
+    except Exception as e:
+        logger.error('Error DB')
+        logger.error(e)
         return None
 
 
@@ -346,7 +375,9 @@ async def get_notifier_lots(dsn: str, m: Message | CallbackQuery):
                 ret = await cursor.fetchall()
             await conn.close()
             return ret
-    except Exception:
+    except Exception as e:
+        logger.error('Error DB')
+        logger.error(e)
         return None
 
 
@@ -361,7 +392,9 @@ async def del_notifier_lots(dsn: str, m: Message | CallbackQuery, vol: int):
             async with conn.cursor() as cursor:
                 await cursor.execute(query)
             await conn.close()
-    except Exception:
+    except Exception as e:
+        logger.error('Error DB')
+        logger.error(e)
         return None
 
 
@@ -381,7 +414,9 @@ async def get_notifier_volumes(dsn: str):
             return [i[0] for i in ret]
         else:
             return []
-    except Exception:
+    except Exception as e:
+        logger.error('Error DB')
+        logger.error(e)
         return None
 
 
@@ -404,7 +439,9 @@ async def get_notifier_users(dsn: str, volume: int):
             return [i for i in ret]
         else:
             return []
-    except Exception:
+    except Exception as e:
+        logger.error('Error DB')
+        logger.error(e)
         return None
 
 
@@ -421,5 +458,7 @@ async def set_notifier_user_status(dsn: str, volume: int, tg_id: int, status: in
             async with conn.cursor() as cursor:
                 await cursor.execute(query)
             await conn.close()
-    except Exception:
+    except Exception as e:
+        logger.error('Error DB')
+        logger.error(e)
         return None
